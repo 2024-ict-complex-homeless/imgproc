@@ -76,7 +76,8 @@ while True:
         kernel_size = (10, 10)  # 커널 크기를 늘려 침식 강도 조절
         kernel = np.ones(kernel_size, np.uint8)
         # 전경 마스크를 축소하여 테두리 부분 제거
-        fgMask_eroded = cv2.erode(fgMask, kernel, iterations=2)
+        # 여기서 커널크기랑 이터레이션 횟수로 테두리 깎아내기 패러미터 조절
+        fgMask_eroded = cv2.erode(fgMask, kernel, iterations=4)
         fg_eroded = cv2.bitwise_and(frame, frame, mask=fgMask_eroded)
 
         # tablet_mask를 축소된 전경 이미지를 사용하여 생성
