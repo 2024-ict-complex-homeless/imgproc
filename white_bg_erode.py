@@ -7,6 +7,7 @@ from imutils.video import VideoStream
 import time
 import json
 
+# 여기서 흰색은 어느정도 감지 완료
 
 # 인수 파서를 구성하고 인수를 구문 분석합니다.
 ap = argparse.ArgumentParser()
