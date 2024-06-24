@@ -15,7 +15,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", help="(선택 사항) 비디오 파일 경로")
 ap.add_argument("-b", "--buffer", type=int, default=64, help="최대 버퍼 크기")
 args = vars(ap.parse_args())
-args["video"] = "C:\\all\imgproc_project\ict_tablet\data\\eg_3.mp4"
+args["video"] = "C:\\all\ict_tablet\data\\eg_3.mp4"
 
 # HSV 색 공간에서 상한 경계 정의 (노란색)
 tablet_Lower = (20, 40, 100)

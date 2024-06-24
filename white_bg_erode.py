@@ -14,6 +14,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", help="(선택 사항) 비디오 파일 경로")
 ap.add_argument("-b", "--buffer", type=int, default=64, help="최대 버퍼 크기")
 args = vars(ap.parse_args())
+#args["video"] = "C:\\all\ict_tablet\data\\eg_3.mp4"
 
 tablet_Lower = (0, 0, 200)
 tablet_Upper = (180, 100, 255)  # 흰색
@@ -73,11 +74,11 @@ while True:
         fg = cv2.bitwise_and(frame, frame, mask=fgMask)
 
         # 커널 크기 조정
-        kernel_size = (10, 10)  # 커널 크기를 늘려 침식 강도 조절
+        kernel_size = (5, 5)  # 커널 크기를 늘려 침식 강도 조절
         kernel = np.ones(kernel_size, np.uint8)
         # 전경 마스크를 축소하여 테두리 부분 제거
         # 여기서 커널크기랑 이터레이션 횟수로 테두리 깎아내기 패러미터 조절
-        fgMask_eroded = cv2.erode(fgMask, kernel, iterations=4)
+        fgMask_eroded = cv2.erode(fgMask, kernel, iterations=2)
         fg_eroded = cv2.bitwise_and(frame, frame, mask=fgMask_eroded)
 
         # tablet_mask를 축소된 전경 이미지를 사용하여 생성
