@@ -2,10 +2,8 @@ import cv2
 import numpy as np
 import argparse
 import imutils
-from collections import deque
-from imutils.video import VideoStream
-import time
 import json
+import time
 
 # 시작 시간 기록
 start_time = time.time()
@@ -13,24 +11,14 @@ start_time = time.time()
 # 인수 파서를 구성하고 인수를 구문 분석합니다.
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", help="(선택 사항) 비디오 파일 경로")
-
-
-
-#흰색 색상범위 파서
-ap.add_argument("-wl", "--white_lower", type=str, default="0,0,200", help="색상 범위 Lower")
-ap.add_argument("-wu", "--white_upper", type=str, default="180,100,255", help="색상 범위 Upper")
-
-#노란색 색상범위 파서
-ap.add_argument("-yl", "--yellow_lower", type=str, default="20,40,100", help="색상 범위 Lower")
-ap.add_argument("-yu", "--yellow_upper", type=str, default="50,255,255", help="색상 범위 Upper")
-
+ap.add_argument("-wl", "--white_lower", type=str, default="0,0,200", help="흰색 색상 범위 Lower")
+ap.add_argument("-wu", "--white_upper", type=str, default="180,100,255", help="흰색 색상 범위 Upper")
+ap.add_argument("-yl", "--yellow_lower", type=str, default="20,40,100", help="노란색 색상 범위 Lower")
+ap.add_argument("-yu", "--yellow_upper", type=str, default="50,255,255", help="노란색 색상 범위 Upper")
 args = vars(ap.parse_args())
 
-
+# 비디오 경로 설정
 args["video"] = "C:\\all\ict_tablet\data\\eg_3.mp4"
-
-# tablet_Lower = (20, 40, 100)
-# tablet_Upper = (50, 250, 250) #노란색
 
 # 색상 범위를 튜플로 변환
 white_Lower = tuple(map(int, args["white_lower"].split(',')))
@@ -39,24 +27,26 @@ white_Upper = tuple(map(int, args["white_upper"].split(',')))
 yellow_Lower = tuple(map(int, args["yellow_lower"].split(',')))
 yellow_Upper = tuple(map(int, args["yellow_upper"].split(',')))
 
-
-if not args.get("video", False):
-    vs = VideoStream(src=0).start()
-else:
-    vs = cv2.VideoCapture(args["video"])
+# 비디오 스트림 설정
+vs = cv2.VideoCapture(args["video"])
+#vs = cv2.VideoCapture(0)
 
 
+# 입 검출을 위한 분류기 로드
 mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')
 if mouth_cascade.empty():
     raise IOError('입 검출을 위한 Haar cascade 분류기 XML 파일을 로드할 수 없습니다.')
 
+backSub = cv2.createBackgroundSubtractorMOG2()
 is_mouth_detected = False
 prev_mouth_rect = None
 
+# 태블릿 상태 정의
 NOT_TABLET_DETECTED = 0
 TABLET_DETECTED_OUTSIDE_MOUTH = 1
 TABLET_DETECTED_INSIDE_MOUTH = 2
 
+# 초기 변수 설정
 white_counter = 0
 white_state = NOT_TABLET_DETECTED
 previous_white_state = NOT_TABLET_DETECTED
@@ -66,11 +56,8 @@ yellow_counter = 0
 yellow_state = NOT_TABLET_DETECTED
 previous_yellow_state = NOT_TABLET_DETECTED
 no_yellow_frames = 0
-backSub = cv2.createBackgroundSubtractorMOG2()
 
-
-
-frame_index = 0  # 프레임 인덱스
+frame_index = 0  # 프레임 인덱스 초기화
 
 def find_tablet_center(frame, lower, upper):
     blurred = cv2.GaussianBlur(frame, (11, 11), 0)
@@ -99,9 +86,9 @@ def find_tablet_center(frame, lower, upper):
         M = cv2.moments(c)
         tablet_center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-        cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 255), 2)
-        cv2.circle(frame, tablet_center, 5, (0, 0, 255), -1)
-        
+        # cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 255), 2)
+        # cv2.circle(frame, tablet_center, 5, (0, 0, 255), -1)
+
         return tablet_center, 0
     else:
         return None, 1
@@ -116,16 +103,16 @@ def detect_and_draw_mouth(frame, mouth_cascade, is_mouth_detected, prev_mouth_re
     else:
         if is_mouth_detected:
             x, y, w, h = prev_mouth_rect
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+            # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
 
-    for (x, y, w, h) in mouth_rects:
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-        break
+    # for (x, y, w, h) in mouth_rects:
+    #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+    #     break
 
     return frame, is_mouth_detected, prev_mouth_rect
 
 def update_tablet_state_and_counter(tablet_center, prev_mouth_rect, tablet_state, previous_tablet_state, tablet_counter, no_detection_frames):
-    
+
     if no_detection_frames > 10:
         tablet_state = NOT_TABLET_DETECTED
     else:
@@ -141,13 +128,12 @@ def update_tablet_state_and_counter(tablet_center, prev_mouth_rect, tablet_state
         tablet_counter += 1
     if no_detection_frames > 30:
         tablet_state = NOT_TABLET_DETECTED
-    
+
     return tablet_state, tablet_counter
 
 while True:
-    frame = vs.read()
-    frame = frame[1] if args.get("video", False) else frame
-    if frame is None:
+    ret, frame = vs.read()
+    if not ret:
         break
 
     if frame_index % 2 == 1:
@@ -177,32 +163,32 @@ while True:
         previous_yellow_state = yellow_state
 
         # 디버그용
-        status_text = f"State: {white_state}"
-        counter_text = f"Count: {white_counter}"
-        
-        yellow_text = f"State: {yellow_state}"
-        yellows_text = f"Count: {yellow_counter}"
-        
-        center_text = f"Center: {white_center}"
-        frame_text = f"Count: {no_white_frames}"
+        # status_text = f"State (White): {white_state}"
+        # counter_text = f"Count (White): {white_counter}"
 
-        cv2.putText(frame, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        cv2.putText(frame, counter_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        # yellow_text = f"State (Yellow): {yellow_state}"
+        # yellows_text = f"Count (Yellow): {yellow_counter}"
 
-        cv2.putText(frame, yellow_text, (500, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        cv2.putText(frame, yellows_text, (500, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        # center_text = f"Center (White): {white_center}"
+        # frame_text = f"Count (White): {no_white_frames}"
 
-        cv2.putText(frame, center_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        cv2.putText(frame, frame_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        # cv2.putText(frame, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        # cv2.putText(frame, counter_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
-        cv2.imshow("Frame", frame)
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord("q"):
-            break
+        # cv2.putText(frame, yellow_text, (500, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        # cv2.putText(frame, yellows_text, (500, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+
+        # cv2.putText(frame, center_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        # cv2.putText(frame, frame_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+
+        # cv2.imshow("Frame", frame)
+        # key = cv2.waitKey(1) & 0xFF
+        # if key == ord("q"):
+        #     break
 
     frame_index += 1
 
-cv2.destroyAllWindows()
+# cv2.destroyAllWindows()
 
 # 종료 시간 기록
 end_time = time.time()
@@ -211,10 +197,12 @@ end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"Elapsed time: {elapsed_time:.2f} seconds")
 
+# # 비디오 스트림 또는 비디오 파일을 해제합니다.
+# vs.release()
 
-if not args.get("video", False):
-    vs.stop()
-else:
-    output = yellow_counter
-    print(json.dumps(output))
-    vs.release()
+# JSON 형식으로 결과를 출력합니다.
+output = {
+    "white_tablet_count": white_counter,
+    "yellow_tablet_count": yellow_counter
+}
+print(json.dumps(output))
