@@ -19,10 +19,11 @@ args = vars(ap.parse_args())
 white_tablet_Lower = (0, 0, 200)
 white_tablet_Upper = (180, 100, 255)  # 흰색
 
-# yellow_tablet_Lower = (20, 40, 100)
-# yellow_tablet_Upper = (50, 250, 250) #노란색
+yellow_tablet_Lower = (20, 40, 100)
+yellow_tablet_Upper = (50, 250, 250) #노란색
 
 white_tablet_pts = deque(maxlen=args["buffer"])
+yellow_tablet_pts = deque(maxlen=args["buffer"])
 
 if not args.get("video", False):
     vs = VideoStream(src=0).start()
@@ -41,7 +42,12 @@ prev_mouth_rect = None
 white_tablet_counter = 0
 white_tablet_state = "not_white_tablet_detected"
 previous_white_tablet_state = "not_white_tablet_detected"
-no_detection_frames = 0
+no_white_detection_frames = 0
+
+yellow_tablet_counter = 0
+yellow_tablet_state = "not_yellow_tablet_detected"
+previous_yellow_tablet_state = "not_yellow_tablet_detected"
+no_yellow_detection_frames = 0
 
 backSub = cv2.createBackgroundSubtractorMOG2()
 
@@ -101,9 +107,9 @@ while True:
             if radius > 2 and cv2.contourArea(c) < 600:
                 cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 255), 2)
                 cv2.circle(frame, white_tablet_center, 5, (0, 0, 255), -1)
-            no_detection_frames = 0
+            no_white_detection_frames = 0
         else:
-            no_detection_frames += 1
+            no_white_detection_frames += 1
 
         white_tablet_pts.appendleft(white_tablet_center)
 
@@ -130,7 +136,7 @@ while True:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
             break
 
-        if no_detection_frames > 10:
+        if no_white_detection_frames > 10:
             white_tablet_state = "not_white_tablet_detected"
         else:
             if white_tablet_center is not None:
@@ -143,7 +149,7 @@ while True:
                         white_tablet_state = "white_tablet_detected_outside_mouth"
         if previous_white_tablet_state == "white_tablet_detected_inside_mouth" and white_tablet_state == "not_white_tablet_detected":
             white_tablet_counter += 1
-        if no_detection_frames > 30:
+        if no_white_detection_frames > 30:
             white_tablet_state = "not_white_tablet_detected"
         previous_white_tablet_state = white_tablet_state
 

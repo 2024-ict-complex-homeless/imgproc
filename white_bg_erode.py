@@ -143,8 +143,6 @@ while True:
                         tablet_state = "tablet_detected_outside_mouth"
         if previous_tablet_state == "tablet_detected_inside_mouth" and tablet_state == "not_tablet_detected":
             tablet_counter += 1
-        if no_detection_frames > 30:
-            tablet_state = "not_tablet_detected"
         previous_tablet_state = tablet_state
 
         status_text = f"State: {tablet_state}"
