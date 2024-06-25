@@ -19,8 +19,8 @@
 이거 다른색깔 추가했음 >> functuon.py에서 노란색만하면 9초 흰색도 넣으면 13초
 
 멀티스레드 추가할려는데 지피티 4.0 맛보기가 끝남
+multithred.py << 지피티3.5로 멀티스레드 추가한건데 33초로 늘어남;;;
 
-multithred.py << 지피티로 멀티스레드 추가한건데 33초로 늘어남;;;
 videocapture 랑 finalversion이랑 같은 파일 그냥 영상출력만 지운거 
 
 function 비디오스트림 >> videocapture 비디오캡쳐로 바꿈 큰 차이는 없음 13초
