@@ -136,7 +136,7 @@ while True:
     if not ret:
         break
 
-    if frame_index % 2 == 1:
+    if frame_index % 4 == 1:
         frame = imutils.resize(frame, width=1200)
 
         # 입영역 검출 먼저
@@ -188,6 +188,8 @@ while True:
 
     frame_index += 1
 
+# # 비디오 스트림 또는 비디오 파일을 해제합니다.
+# vs.release()
 # cv2.destroyAllWindows()
 
 # 종료 시간 기록
@@ -197,12 +199,11 @@ end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"Elapsed time: {elapsed_time:.2f} seconds")
 
-# # 비디오 스트림 또는 비디오 파일을 해제합니다.
-# vs.release()
+
 
 # JSON 형식으로 결과를 출력합니다.
-output = {
-    "white_tablet_count": white_counter,
-    "yellow_tablet_count": yellow_counter
-}
-print(json.dumps(output))
+white_output = white_counter
+yellow_output = yellow_counter
+
+print(json.dumps(white_output))
+print(json.dumps(yellow_output))

@@ -136,7 +136,7 @@ while True:
     if not ret:
         break
 
-    if frame_index % 2 == 1:
+    if frame_index % 4 == 1:
         frame = imutils.resize(frame, width=1200)
 
         # 입영역 검출 먼저
@@ -201,8 +201,8 @@ print(f"Elapsed time: {elapsed_time:.2f} seconds")
 vs.release()
 
 # JSON 형식으로 결과를 출력합니다.
-output = {
-    "white_tablet_count": white_counter,
-    "yellow_tablet_count": yellow_counter
-}
-print(json.dumps(output))
+white_output = white_counter
+yellow_output = yellow_counter
+
+print(json.dumps(white_output))
+print(json.dumps(yellow_output))
