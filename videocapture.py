@@ -11,14 +11,14 @@ start_time = time.time()
 # 인수 파서를 구성하고 인수를 구문 분석합니다.
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", help="(선택 사항) 비디오 파일 경로")
-ap.add_argument("-wl", "--white_lower", type=str, default="0,0,200", help="흰색 색상 범위 Lower")
+ap.add_argument("-wl", "--white_lower", type=str, default="0,0,150", help="흰색 색상 범위 Lower")
 ap.add_argument("-wu", "--white_upper", type=str, default="180,100,255", help="흰색 색상 범위 Upper")
-ap.add_argument("-yl", "--yellow_lower", type=str, default="20,40,100", help="노란색 색상 범위 Lower")
+ap.add_argument("-yl", "--yellow_lower", type=str, default="20,40,40", help="노란색 색상 범위 Lower")
 ap.add_argument("-yu", "--yellow_upper", type=str, default="50,255,255", help="노란색 색상 범위 Upper")
 args = vars(ap.parse_args())
 
 # 비디오 경로 설정
-args["video"] = "C:\\all\ict_tablet\data\\eg_3.mp4"
+args["video"] = "C:\\all\ict_tablet\data\\t1.mp4"
 
 # 색상 범위를 튜플로 변환
 white_Lower = tuple(map(int, args["white_lower"].split(',')))
@@ -131,13 +131,23 @@ def update_tablet_state_and_counter(tablet_center, prev_mouth_rect, tablet_state
 
     return tablet_state, tablet_counter
 
+def adjust_gamma(image, gamma=1.0):
+    invGamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
+    return cv2.LUT(image, table)
+
+
 while True:
     ret, frame = vs.read()
     if not ret:
         break
 
-    if frame_index % 4 == 1:
-        frame = imutils.resize(frame, width=1200)
+    if frame_index % 2 == 1:
+        frame = imutils.resize(frame, width=300)
+
+        # # 감마 값을 조정하여 프레임의 밝기를 조절합니다.
+        gamma = 0.5  # 감마 값을 낮추면 프레임이 어두워집니다.
+        frame = adjust_gamma(frame, gamma=gamma)
 
         # 입영역 검출 먼저
         frame, is_mouth_detected, prev_mouth_rect = detect_and_draw_mouth(frame, mouth_cascade, is_mouth_detected, prev_mouth_rect)
@@ -177,7 +187,7 @@ while True:
 
         cv2.putText(frame, yellow_text, (500, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
         cv2.putText(frame, yellows_text, (500, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-
+        
         cv2.putText(frame, center_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
         cv2.putText(frame, frame_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
