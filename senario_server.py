@@ -13,12 +13,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", help="(선택 사항) 비디오 파일 경로")
 ap.add_argument("-wl", "--white_lower", type=str, default="0,0,200", help="흰색 색상 범위 Lower")
 ap.add_argument("-wu", "--white_upper", type=str, default="180,100,255", help="흰색 색상 범위 Upper")
-ap.add_argument("-yl", "--yellow_lower", type=str, default="20,40,100", help="노란색 색상 범위 Lower")
+ap.add_argument("-yl", "--yellow_lower", type=str, default="30,40,100", help="노란색 색상 범위 Lower")
 ap.add_argument("-yu", "--yellow_upper", type=str, default="50,255,255", help="노란색 색상 범위 Upper")
 args = vars(ap.parse_args())
 
 # 비디오 경로 설정
-args["video"] = "C:\\all\ict_tablet\data\\eg_3.mp4"
+args["video"] = "C:\\all\ict_tablet\data\\z1.mp4"
 
 # 색상 범위를 튜플로 변환
 white_Lower = tuple(map(int, args["white_lower"].split(',')))
@@ -86,8 +86,8 @@ def find_tablet_center(frame, lower, upper):
         M = cv2.moments(c)
         tablet_center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-        # cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 255), 2)
-        # cv2.circle(frame, tablet_center, 5, (0, 0, 255), -1)
+        cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 255), 2)
+        cv2.circle(frame, tablet_center, 5, (0, 0, 255), -1)
 
         return tablet_center, 0
     else:
@@ -103,11 +103,11 @@ def detect_and_draw_mouth(frame, mouth_cascade, is_mouth_detected, prev_mouth_re
     else:
         if is_mouth_detected:
             x, y, w, h = prev_mouth_rect
-            # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
 
-    # for (x, y, w, h) in mouth_rects:
-    #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-    #     break
+    for (x, y, w, h) in mouth_rects:
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+        break
 
     return frame, is_mouth_detected, prev_mouth_rect
 
@@ -131,26 +131,36 @@ def update_tablet_state_and_counter(tablet_center, prev_mouth_rect, tablet_state
 
     return tablet_state, tablet_counter
 
+def adjust_gamma(image, gamma=1.0):
+    invGamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
+    return cv2.LUT(image, table)
+
+
 while True:
     ret, frame = vs.read()
     if not ret:
         break
 
-    if frame_index % 4 == 1:
-        frame = imutils.resize(frame, width=900)
+    if frame_index % 2 == 1 or frame_index % 2 == 0:
+        frame = imutils.resize(frame, width=300)
+        
+        # # 감마 값을 조정하여 프레임의 밝기를 조절합니다.
+        gamma = 0.4  # 감마 값을 낮추면 프레임이 어두워집니다.
+        frame = adjust_gamma(frame, gamma=gamma)
 
         # 입영역 검출 먼저
         frame, is_mouth_detected, prev_mouth_rect = detect_and_draw_mouth(frame, mouth_cascade, is_mouth_detected, prev_mouth_rect)
 
-        # 흰색 함수돌리기
-        white_center, white_flag = find_tablet_center(frame, white_Lower, white_Upper)
-        if white_flag == 0:
-            no_white_frames = 0
-        else:
-            no_white_frames += white_flag
+        # # 흰색 함수돌리기
+        # white_center, white_flag = find_tablet_center(frame, white_Lower, white_Upper)
+        # if white_flag == 0:
+        #     no_white_frames = 0
+        # else:
+        #     no_white_frames += white_flag
 
-        white_state, white_counter = update_tablet_state_and_counter(white_center, prev_mouth_rect, white_state, previous_white_state, white_counter, no_white_frames)
-        previous_white_state = white_state
+        # white_state, white_counter = update_tablet_state_and_counter(white_center, prev_mouth_rect, white_state, previous_white_state, white_counter, no_white_frames)
+        # previous_white_state = white_state
 
         # 노란색 함수 돌리기
         yellow_center, yellow_flag = find_tablet_center(frame, yellow_Lower, yellow_Upper)
@@ -162,7 +172,7 @@ while True:
         yellow_state, yellow_counter = update_tablet_state_and_counter(yellow_center, prev_mouth_rect, yellow_state, previous_yellow_state, yellow_counter, no_yellow_frames)
         previous_yellow_state = yellow_state
 
-        # 디버그용
+        # # 디버그용
         # status_text = f"State (White): {white_state}"
         # counter_text = f"Count (White): {white_counter}"
 
@@ -175,9 +185,9 @@ while True:
         # cv2.putText(frame, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
         # cv2.putText(frame, counter_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
-        # cv2.putText(frame, yellow_text, (500, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        # cv2.putText(frame, yellows_text, (500, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-
+        # cv2.putText(frame, yellow_text, (50, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        # cv2.putText(frame, yellows_text, (50, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        
         # cv2.putText(frame, center_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
         # cv2.putText(frame, frame_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
@@ -188,9 +198,7 @@ while True:
 
     frame_index += 1
 
-# # 비디오 스트림 또는 비디오 파일을 해제합니다.
-# vs.release()
-# cv2.destroyAllWindows()
+#cv2.destroyAllWindows()
 
 # 종료 시간 기록
 end_time = time.time()
@@ -199,7 +207,8 @@ end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"Elapsed time: {elapsed_time:.2f} seconds")
 
-
+# # 비디오 스트림 또는 비디오 파일을 해제합니다.
+# vs.release()
 
 # JSON 형식으로 결과를 출력합니다.
 white_output = white_counter
