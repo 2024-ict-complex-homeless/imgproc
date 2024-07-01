@@ -27,7 +27,7 @@ ap.add_argument("-yu", "--yellow_upper", type=str, default="50,255,255", help="�
 args = vars(ap.parse_args())
 
 
-args["video"] = "C:\\all\ict_tablet\data\\eg_3.mp4"
+#args["video"] = "C:\\all\ict_tablet\data\\eg_3.mp4"
 
 # tablet_Lower = (20, 40, 100)
 # tablet_Upper = (50, 250, 250) #노란색

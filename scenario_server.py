@@ -86,8 +86,8 @@ def find_tablet_center(frame, lower, upper):
         M = cv2.moments(c)
         tablet_center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-        cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 255), 2)
-        cv2.circle(frame, tablet_center, 5, (0, 0, 255), -1)
+        # cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 255), 2)
+        # cv2.circle(frame, tablet_center, 5, (0, 0, 255), -1)
 
         return tablet_center, 0
     else:
@@ -103,11 +103,11 @@ def detect_and_draw_mouth(frame, mouth_cascade, is_mouth_detected, prev_mouth_re
     else:
         if is_mouth_detected:
             x, y, w, h = prev_mouth_rect
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+            #cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
 
-    for (x, y, w, h) in mouth_rects:
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-        break
+    # for (x, y, w, h) in mouth_rects:
+    #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+    #     break
 
     return frame, is_mouth_detected, prev_mouth_rect
 
@@ -191,10 +191,10 @@ while True:
         # cv2.putText(frame, center_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
         # cv2.putText(frame, frame_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
-        # cv2.imshow("Frame", frame)
-        # key = cv2.waitKey(1) & 0xFF
-        # if key == ord("q"):
-        #     break
+        cv2.imshow("Frame", frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q"):
+            break
 
     frame_index += 1
 
